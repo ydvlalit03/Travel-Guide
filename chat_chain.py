@@ -164,7 +164,7 @@ def _get_weather_context(city: str, use_weather: bool) -> str:
     if not city:
         return ""
 
-    url = "https://api.openweathermap.org/data/2.5/weather"
+    url =f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}"
     params = {"q": city, "appid": OPENWEATHER_API_KEY, "units": "metric"}
 
     try:
@@ -215,7 +215,7 @@ def _get_events_context(city: str, use_events: bool) -> str:
     if not use_events or not SERPAPI_API_KEY:
         return ""
 
-    url = "https://serpapi.com/search.json"
+    url = f"https://serpapi.com/search.json?engine=google_events&q=Events in {city}&api_key={SERPAPI_API_KEY}"
     params = {
         "engine": "google_events",
         "q": f"Events in {city}",
@@ -379,3 +379,4 @@ def chat_once_sync(
             use_events=use_events,
         )
     )
+
