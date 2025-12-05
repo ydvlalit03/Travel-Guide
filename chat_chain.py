@@ -1,4 +1,4 @@
-# backend/chat_chain.py
+# chat_chain.py
 import os
 from typing import Dict, Optional
 
@@ -13,7 +13,9 @@ from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableWithMessageHistory
 from langchain.memory import ChatMessageHistory
 
-load_dotenv()
+import asyncio
+
+load_dotenv()  # for local development; on Streamlit Cloud we use st.secrets via app.py
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
@@ -66,7 +68,7 @@ Core role:
   - live web snippets
 
 City handling:
-- The frontend provides a `city` field. Assume all questions are about that city
+- The app provides a `city` field. Assume all questions are about that city
   unless the user clearly switches to another one.
 - If the city is missing or ambiguous, ask the user which city they mean.
 
@@ -115,8 +117,6 @@ Style:
 """
 
 
-# -------- Helpers: research, forecast, weather, events --------
-
 def _tavily_search(query: str) -> str:
     research_tool = getattr(chat_chain, "research_tool", None)
     if research_tool is None:
@@ -164,7 +164,7 @@ def _get_weather_context(city: str, use_weather: bool) -> str:
     if not city:
         return ""
 
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}"
+    url = "https://api.openweathermap.org/data/2.5/weather"
     params = {"q": city, "appid": OPENWEATHER_API_KEY, "units": "metric"}
 
     try:
@@ -215,7 +215,7 @@ def _get_events_context(city: str, use_events: bool) -> str:
     if not use_events or not SERPAPI_API_KEY:
         return ""
 
-    url = f"https://serpapi.com/search.json?engine=google_events&q=Events in {city}&api_key={SERPAPI_API_KEY}"
+    url = "https://serpapi.com/search.json"
     params = {
         "engine": "google_events",
         "q": f"Events in {city}",
@@ -258,8 +258,6 @@ def _get_events_context(city: str, use_events: bool) -> str:
     return "Local events:\n" + "\n".join(lines)
 
 
-# -------- Build chain --------
-
 def build_chain() -> RunnableWithMessageHistory:
     llm = get_llm()
     research_tool = get_research_tool()
@@ -298,8 +296,6 @@ def build_chain() -> RunnableWithMessageHistory:
 chat_chain = build_chain()
 
 
-# -------- Main entry for FastAPI --------
-
 async def chat_once(
     session_id: str,
     city: Optional[str],
@@ -310,7 +306,7 @@ async def chat_once(
     use_events: bool = True,
 ) -> str:
     """
-    One chat turn for the travel bot (without RAG).
+    One chat turn for the travel bot (async).
     """
     city = (city or "").strip()
     if not city:
@@ -358,3 +354,28 @@ async def chat_once(
     if isinstance(result, AIMessage):
         return result.content
     return str(result)
+
+
+def chat_once_sync(
+    session_id: str,
+    city: Optional[str],
+    user_message: str,
+    mode: str = "chat",
+    use_web: bool = True,
+    use_weather: bool = True,
+    use_events: bool = True,
+) -> str:
+    """
+    Synchronous wrapper for Streamlit.
+    """
+    return asyncio.run(
+        chat_once(
+            session_id=session_id,
+            city=city,
+            user_message=user_message,
+            mode=mode,
+            use_web=use_web,
+            use_weather=use_weather,
+            use_events=use_events,
+        )
+    )
