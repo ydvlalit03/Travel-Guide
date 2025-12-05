@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .chat_chain import chat_once
+from backend.chat_chain import chat_once
 
 
 app = FastAPI(
@@ -53,3 +53,4 @@ async def chat_endpoint(payload: ChatRequest):
         use_events=payload.use_events,
     )
     return ChatResponse(reply=reply)
+
