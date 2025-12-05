@@ -8,10 +8,10 @@ import requests
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import TavilySearchResults
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.chat_history import ChatMessageHistory, BaseChatMessageHistory
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableWithMessageHistory
-from langchain.memory import ChatMessageHistory
+
 
 import asyncio
 
@@ -379,4 +379,5 @@ def chat_once_sync(
             use_events=use_events,
         )
     )
+
 
