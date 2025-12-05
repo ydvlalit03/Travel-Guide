@@ -55,6 +55,10 @@ def get_research_tool() -> TavilySearchResults:
     )
 
 
+# Global Tavily tool instead of attaching to the chain
+RESEARCH_TOOL = get_research_tool()
+
+
 SYSTEM_PROMPT = """
 You are a focused TRAVEL GUIDE and SMART ITINERARY PLANNER.
 
@@ -118,11 +122,10 @@ Style:
 
 
 def _tavily_search(query: str) -> str:
-    research_tool = getattr(chat_chain, "research_tool", None)
-    if research_tool is None:
+    if RESEARCH_TOOL is None:
         return ""
     try:
-        res = research_tool.invoke({"query": query})
+        res = RESEARCH_TOOL.invoke({"query": query})
     except Exception:
         return ""
     if isinstance(res, list):
@@ -260,7 +263,6 @@ def _get_events_context(city: str, use_events: bool) -> str:
 
 def build_chain() -> RunnableWithMessageHistory:
     llm = get_llm()
-    research_tool = get_research_tool()
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -289,7 +291,6 @@ def build_chain() -> RunnableWithMessageHistory:
         output_messages_key="output",
     )
 
-    chain_with_history.research_tool = research_tool
     return chain_with_history
 
 
