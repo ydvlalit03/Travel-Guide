@@ -8,7 +8,6 @@ import requests
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import TavilySearchResults
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.chat_history import ChatMessageHistory, BaseChatMessageHistory
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableWithMessageHistory
 
@@ -25,10 +24,17 @@ SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 _SESSION_STORE: Dict[str, BaseChatMessageHistory] = {}
 
 
+# Memory
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+
+_SESSION_STORE = {}
+
 def get_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in _SESSION_STORE:
         _SESSION_STORE[session_id] = ChatMessageHistory()
     return _SESSION_STORE[session_id]
+
 
 
 def get_llm() -> ChatGoogleGenerativeAI:
@@ -379,5 +385,6 @@ def chat_once_sync(
             use_events=use_events,
         )
     )
+
 
 
