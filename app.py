@@ -1,6 +1,8 @@
 import streamlit as st
 import uuid
-from chat_chain import chat_once   # direct import
+from chat_chain import chat_once
+from chat_chain import chat_once_sync
+# direct import
 import asyncio
 
 # No backend URL needed anymore
@@ -75,3 +77,4 @@ if user_input:
     st.session_state["messages"].append({"role":"assistant","content":bot_msg})
     with st.chat_message("assistant"):
         st.write(bot_msg)
+
