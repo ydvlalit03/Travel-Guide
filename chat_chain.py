@@ -291,10 +291,11 @@ def build_chain() -> RunnableWithMessageHistory:
         output_messages_key="output",
     )
 
+    # Important: do not attach any custom attributes to chain_with_history.
+    # No "research_tool" field here.
+
     return chain_with_history
 
-
-chat_chain = build_chain()
 
 
 async def chat_once(
@@ -380,3 +381,4 @@ def chat_once_sync(
             use_events=use_events,
         )
     )
+
