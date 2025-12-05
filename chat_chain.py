@@ -7,34 +7,28 @@ import requests
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import TavilySearchResults
+from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableWithMessageHistory
 
-
 import asyncio
 
-load_dotenv()  # for local development; on Streamlit Cloud we use st.secrets via app.py
+# For local runs (.env). On Streamlit Cloud we override env via st.secrets in app.py
+load_dotenv()
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
-# In-memory session history
-_SESSION_STORE: Dict[str, BaseChatMessageHistory] = {}
+# In-memory session history: session_id -> ChatMessageHistory
+_SESSION_STORE: Dict[str, ChatMessageHistory] = {}
 
 
-# Memory
-from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain_core.chat_history import BaseChatMessageHistory
-
-_SESSION_STORE = {}
-
-def get_history(session_id: str) -> BaseChatMessageHistory:
+def get_history(session_id: str) -> ChatMessageHistory:
     if session_id not in _SESSION_STORE:
         _SESSION_STORE[session_id] = ChatMessageHistory()
     return _SESSION_STORE[session_id]
-
 
 
 def get_llm() -> ChatGoogleGenerativeAI:
@@ -115,7 +109,7 @@ Style:
 - Structure:
   - Use headings and bullet points for itineraries.
   - Use clear time ranges like "9:00–11:00".
-- Safety & honesty:
+- Honesty:
   - If you are unsure or see no data, say so and avoid making up details.
   - Use approximate language for prices and schedules unless they appear explicitly.
 - Emojis:
@@ -170,7 +164,7 @@ def _get_weather_context(city: str, use_weather: bool) -> str:
     if not city:
         return ""
 
-    url =f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}"
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}"
     params = {"q": city, "appid": OPENWEATHER_API_KEY, "units": "metric"}
 
     try:
@@ -385,6 +379,3 @@ def chat_once_sync(
             use_events=use_events,
         )
     )
-
-
-
