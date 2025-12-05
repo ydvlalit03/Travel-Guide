@@ -1,7 +1,7 @@
 streamlit
-langchain
-langchain-core
-langchain-community
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-community>=0.2.0
 langchain-google-genai
 
 tavily-python
